@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Oswald:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --font-oswald: "Oswald", sans-serif;
+  
+  --color-gold: #C8A96E;
+  --color-bg-main: #0A0A0A;
+  --color-bg-sidebar: #111111;
+  --color-bg-card: #1A1A1A;
+  --color-border: #2A2A2A;
+  --color-done: #2E7D32;
+  --color-missed: #8B0000;
+  --color-text-main: #F0EDE6;
+  --color-text-muted: #7A7A7A;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-main text-text-main font-mono;
+    background-image: url("https://www.transparenttextures.com/patterns/carbon-fibre.png");
+    background-attachment: fixed;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bebas uppercase;
+  }
+  
+  input, button {
+    @apply rounded-none;
+  }
+}
+
+.gold-top-border {
+  border-top: 2px solid #C8A96E;
+}
+
+.sharp-card {
+  @apply bg-bg-card border border-border;
+  border-top: 2px solid #C8A96E;
+}
+
+@keyframes stamp {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-stamp {
+  animation: stamp 250ms ease-out forwards;
+}
+
+.glow-done {
+  box-shadow: 0 0 20px rgba(46, 125, 50, 0.4);
+  transition: box-shadow 500ms ease-out;
+}
+
+.glow-missed {
+  box-shadow: 0 0 20px rgba(139, 0, 0, 0.4);
+  transition: box-shadow 500ms ease-out;
+}
+
+@keyframes shield-activate {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.animate-shield {
+  animation: shield-activate 300ms ease-out forwards;
+}
+
+@keyframes shield-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-shield-pulse {
+  animation: shield-pulse 2s infinite ease-in-out;
+}
+
+@keyframes fade-up-out {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 1; transform: translateY(-10px); }
+  80% { opacity: 1; transform: translateY(-20px); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+
+.animate-fade-up-out {
+  animation: fade-up-out 1.5s ease-out forwards;
+}
+
+@keyframes strikethrough-grow {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.strikethrough-line {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  background: currentColor;
+  animation: strikethrough-grow 300ms ease-out forwards;
+}
+
+@keyframes border-flash {
+  0%, 100% { border-color: var(--color-border); }
+  50% { border-color: var(--color-gold); box-shadow: 0 0 10px var(--color-gold); }
+}
+
+.animate-border-flash {
+  animation: border-flash 400ms ease-out;
+}
+
+.grid-cell {
+  @apply w-10 h-10 md:w-12 md:h-12 flex items-center justify-center border border-border bg-bg-card transition-all relative;
+}
+
+.grid-cell-done {
+  @apply bg-[#1A2E1A] text-done font-bold;
+}
+
+.grid-cell-missed {
+  @apply bg-[#2E1A1A] text-missed font-bold;
+}
+
+.grid-cell-protected {
+  @apply bg-[#1E1A0A] text-gold border-gold;
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mobile Polish */
+@media (max-width: 768px) {
+  .modal-full {
+    @apply fixed inset-0 z-50 bg-bg-main p-4 overflow-y-auto;
+  }
+  
+  .tap-target {
+    @apply min-h-[44px] flex items-center;
+  }
+}
+

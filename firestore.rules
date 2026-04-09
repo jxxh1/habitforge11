@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (UID)
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - email: string (required, email format)
+    //   - role: string (required, ['user', 'admin'])
+    //   - created_at: timestamp (required)
+    //
+    // Collection: habits
+    // Document ID: habitId
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - category: string (optional)
+    //   - color: string (optional, hex)
+    //   - frequency: string (optional)
+    //   - sort_order: number (optional)
+    //   - is_active: bool (required)
+    //   - user_id: string (required, matches owner)
+    //   - created_at: timestamp (required)
+    //
+    // Collection: habit_logs
+    // Document ID: logId
+    // Fields:
+    //   - habit_id: string (required)
+    //   - user_id: string (required, matches owner)
+    //   - log_date: string (required, YYYY-MM-DD)
+    //   - status: string (required, ['done', 'missed', 'protected'])
+    //   - created_at: timestamp (required)
+    //
+    // [Other collections follow similar pattern: owned by user_id]
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.user_id;
+    }
+
+    function requestMatchesOwner() {
+      return isAuthenticated() && request.auth.uid == request.resource.data.user_id;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "indiangamers123j@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId && 
+                      request.resource.data.role == 'user' &&
+                      isValidEmail(request.resource.data.email);
+      allow update: if isOwner(userId) && 
+                      request.resource.data.role == resource.data.role &&
+                      (!('sleep_target' in request.resource.data) || (request.resource.data.sleep_target is number && request.resource.data.sleep_target >= 1 && request.resource.data.sleep_target <= 12));
+    }
+
+    match /habits/{habitId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if requestMatchesOwner();
+      allow update: if isDocOwner() && requestMatchesOwner();
+      allow delete: if isDocOwner();
+    }
+
+    match /habit_logs/{logId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if requestMatchesOwner();
+      allow update: if isDocOwner() && requestMatchesOwner();
+      allow delete: if isDocOwner();
+    }
+
+    match /goals/{goalId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if requestMatchesOwner();
+      allow update: if isDocOwner() && requestMatchesOwner();
+      allow delete: if isDocOwner();
+    }
+
+    match /sleep_logs/{logId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if requestMatchesOwner();
+      allow update: if isDocOwner() && requestMatchesOwner();
+      allow delete: if isDocOwner();
+    }
+
+    match /journal_entries/{entryId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if requestMatchesOwner();
+      allow update: if isDocOwner() && requestMatchesOwner();
+      allow delete: if isDocOwner();
+    }
+
+    match /streak_protection/{protectionId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if requestMatchesOwner();
+      allow update: if isDocOwner() && requestMatchesOwner();
+      allow delete: if isDocOwner();
+    }
+  }
+}
